@@ -1,0 +1,44 @@
+import requests
+import json
+
+def consultar_ipca():
+    url = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.4447/dados?formato=json'
+    resposta = requests.get(url)
+    dados = json.loads(resposta.text)
+    return dados
+
+def consultar_dolar():
+    url = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados?formato=json'
+    resposta = requests.get(url)
+    dados = json.loads(resposta.text)
+    return dados
+
+def organizacao_dados(dados_ipca, dados_dolar):
+    lista_de_dicts = []
+    # pega datas e o numero do ipca e compara com o dolar deixando na seguinte estrutura:
+    '''
+    dados = [
+    {
+        "data": "01/01/1992",
+        "ipca": "26.18",
+        "dolar": "n/a"
+    },
+    {
+        "data": "02/01/1992",
+        "ipca": "n/a",
+        "dolar": "1079.4000"
+    }...
+    '''
+    for ipca in dados_ipca:
+        data = ipca['data']
+        valor = ipca['valor']
+        lista_de_dicts.append({'data': data, 'ipca': valor, 'dolar': 'n/a'})
+    for dolar in dados_dolar:
+        data = dolar['data']
+        valor = dolar['valor']
+        for dict in lista_de_dicts:
+            if dict['data'] == data:
+                dict['dolar'] = valor
+    return lista_de_dicts
+
+print(organizacao_dados(consultar_ipca(), consultar_dolar()))
